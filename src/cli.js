@@ -30,6 +30,14 @@ module.exports = function testrailCliFactory(coreFactory, TestRailFactory, argv,
     configs = {projectId: null, caseNameToIdMap: {}, caseClassAndNameToIdMap: {}};
   }
 
+  // Pre-compile `caseIdRegExp` for better performance, if configured
+  if (configs.caseIdRegExp) {
+    configs.caseIdRegExp = new RegExp(configs.caseIdRegExp);
+  }
+
+  // Default `detailedFailures` to false
+  configs.detailedFailures = configs.detailedFailures || false
+
   // Global configs to pull in.
   configs.debug = argv.debug || false;
 

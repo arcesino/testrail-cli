@@ -193,6 +193,14 @@ module.exports = function constructCore(TestRail, configs, process, console) {
                     if (testcase.children[0].attributes.message){
                       caseResult.comment = HtmlEntities.decode(testcase.children[0].attributes.message);
                     }
+
+                    // If `detailedFailures` set to `true`, include failure's content in the comment
+                    if (configs.detailedFailures) {
+                      // "failure" elements are expected to have a single text node with relevant data to the failure
+                      var failureContent = testcase.children[0].children[0];
+
+                      caseResult.comment += '\n' + HtmlEntities.decode(failureContent.content);
+                    }
                   }
 
                   // Only append tests we've mapped to a TestRail case.
@@ -274,6 +282,14 @@ module.exports = function constructCore(TestRail, configs, process, console) {
     _resolveCaseIdFrom: function resolveCaseIdFromTestCase(testCase) {
       var testClass = HtmlEntities.decode(testCase.attributes.classname),
           testName = HtmlEntities.decode(testCase.attributes.name);
+
+      // If `caseIdRegExp` is configured, try matching a case id in case name.
+      if (configs.caseIdRegExp) {
+        var matcher = testName.match(configs.caseIdRegExp);
+        if(matcher) {
+          return matcher[1];
+        }
+      }
 
       // First check if there's a matching caseClassAndNameToIdMap class.
       if (configs.caseClassAndNameToIdMap && configs.caseClassAndNameToIdMap[testClass]) {
